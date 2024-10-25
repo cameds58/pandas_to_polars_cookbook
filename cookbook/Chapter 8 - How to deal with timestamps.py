@@ -8,7 +8,7 @@ import polars as pl
 
 # Read it, and remove the last row
 # Step 1: Read the text file line by line (plain text handling)
-file_path = r"C:/Users/psingh/polars_update/data/popularity-contest"
+file_path = r"file_path"
 
 with open(file_path, 'r') as f:
     lines = f.readlines()
@@ -35,9 +35,6 @@ popcon = pl.DataFrame(normalized_data, schema=column_names)
 print(popcon.head(5))
 
 
-# TODO: please reimplement this using Polars
-
-
 # %%
 # The magical part about parsing timestamps in pandas is that numpy datetimes are already stored as Unix timestamps. So all we need to do is tell pandas that these integers are actually datetimes -- it doesn't need to do any conversion at all.
 # We need to convert these to ints to start:
@@ -54,8 +51,6 @@ popcon = popcon.with_columns([
 
 # Step 3: Display the updated DataFrame
 print(popcon.head())
-
-# TODO: please reimplement this using Polars
 
 
 # %%
@@ -102,7 +97,6 @@ nonlibraries_sorted = nonlibraries.sort("ctime", descending=True).head(10)
 # Display the sorted, filtered data
 print(nonlibraries_sorted)
 
-# TODO: please reimplement this using Polars
 
 
 # The whole message here is that if you have a timestamp in seconds or milliseconds or nanoseconds, then you can just "cast" it to a `'datetime64[the-right-thing]'` and pandas/numpy will take care of the rest.
