@@ -8,7 +8,7 @@ import polars as pl
 
 # Read it, and remove the last row
 # Step 1: Read the text file line by line (plain text handling)
-file_path = r"file_path"
+file_path = "../data/gdp_data.csv"
 
 with open(file_path, 'r') as f:
     lines = f.readlines()
