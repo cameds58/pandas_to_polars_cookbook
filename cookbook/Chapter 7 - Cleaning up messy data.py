@@ -22,6 +22,7 @@ dtypes = {
 requests = pl.read_csv(r"C:/Users\psingh\Desktop\pandas_to_polars_cookbook\data\311-service-requests.csv", dtypes=dtypes)
 requests.head()
 
+
 # TODO: load the data with Polars
 
 
@@ -48,6 +49,7 @@ requests.head()
 
 requests.select(pl.col("Incident Zip").unique())
 
+
 # TODO: what's the Polars command for this?
 
 # %%
@@ -59,6 +61,7 @@ requests = pl.read_csv(
 )
 requests.select(pl.col("Incident Zip").unique())
 
+
 # TODO: please implement this with Polars
 
 
@@ -69,6 +72,7 @@ num_rows_with_dashes = rows_with_dashes.shape[0]  # Equivalent to len in Pandas
 print(f"Number of rows with dashes: {num_rows_with_dashes}")
 # Display the rows that contain dashes
 print(rows_with_dashes)
+
 
 # TODO: please implement this with Polars
 
@@ -91,6 +95,7 @@ requests = requests.with_columns(
 
 # View the updated DataFrame
 print(requests.head())
+
 
 # TODO: please implement this with Polars
 
@@ -116,8 +121,8 @@ print(zero_zips)
 # 4. Verify that the "00000" values have been replaced with null
 print(requests.filter(pl.col("Incident Zip").is_null()))
 
-# TODO: please implement this with Polars
 
+# TODO: please implement this with Polars
 
 # %%
 # Great. Let's see where we are now:
@@ -137,6 +142,7 @@ unique_zips_after = requests.select(pl.col("Incident Zip").unique())
 # Convert to a list and sort
 unique_zips_sorted = unique_zips_after.to_series().sort()
 print("Sorted Unique Zip Codes:", unique_zips_sorted)
+
 
 # Amazing! This is much cleaner.
 
@@ -161,6 +167,7 @@ is_far = requests.filter(
 # Display the filtered zip codes that don't start with '0' or '1'
 print(is_far.select(["Incident Zip"]))
 
+
 # TODO: please implement this with Polars
 
 
@@ -174,6 +181,7 @@ filtered_sorted = (
 
 # Display the sorted and filtered DataFrame
 print(filtered_sorted)
+
 
 # TODO: please implement this with Polars
 
@@ -189,10 +197,10 @@ city_counts = requests.select(pl.col("City").value_counts())
 # Display the result
 print(city_counts)
 
+
 # It looks like these are legitimate complaints, so we'll just leave them alone.
 
 # TODO: please implement this with Polars
-
 
 # %%
 # Let's turn this analysis into a function putting it all together:
@@ -222,6 +230,7 @@ unique_zips = requests.select(pl.col("Incident Zip").unique())
 
 # Display the result
 print(unique_zips)
+
 
 # TODO: please implement this with Polars
 
