@@ -1,6 +1,8 @@
 # %%
 import pandas as pd
 import matplotlib.pyplot as plt
+import polars as pl
+import matplotlib.dates as mdates
 
 
 # %%
@@ -13,14 +15,15 @@ import matplotlib.pyplot as plt
 
 broken_df = pd.read_csv("../data/bikes.csv", encoding="ISO-8859-1")
 
-# TODO: please load the data with the Polars library (do not forget to import Polars at the top of the script) and call it pl_broken_df
 
+# TODO: please load the data with the Polars library (do not forget to import Polars at the top of the script) and call it pl_broken_df
+pl_broken_df = pl.read_csv("../data/bikes.csv")
 # %%
 # Look at the first 3 rows
 broken_df[:3]
 
 # TODO: do the same with your polars data frame, pl_broken_df
-
+pl_broken_df[:3]
 # %%
 # You'll notice that this is totally broken! `read_csv` has a bunch of options that will let us fix that, though. Here we'll
 
@@ -41,6 +44,14 @@ fixed_df = pd.read_csv(
 fixed_df[:3]
 
 # TODO: do the same (or similar) with polars
+pl_fixed_df = pl.read_csv("../data/bikes.csv", separator=';', encoding='latin1')
+
+#parse datetime and specify day comes first
+pl_fixed_df = pl_fixed_df.with_columns(pl.col("Date").str.strptime(pl.Date, "%d/%m/%Y").alias("Date"))
+
+#set index  as Date column
+pl_fixed_df = pl_fixed_df.sort("Date")
+pl_fixed_df[:3]
 
 
 # %%
@@ -51,14 +62,18 @@ fixed_df[:3]
 fixed_df["Berri 1"]
 
 # TODO: how would you do this with a Polars data frame?
-
+pl_fixed_df["Berri 1"]
 
 # %%
 # Plotting is quite easy in Pandas
 fixed_df["Berri 1"].plot()
 
 # TODO: how would you do this with a Polars data frame?
-
+# use matplotlib to plot polars 
+berri_1_ls = pl_fixed_df["Berri 1"].to_list()
+plt.plot(pl_fixed_df['Date'].to_list(), berri_1_ls)
+plt.title("polars - berri_1 plot")
+plt.show()
 
 # %%
 # We can also plot all the columns just as easily. We'll make it a little bigger, too.
@@ -67,3 +82,14 @@ fixed_df["Berri 1"].plot()
 fixed_df.plot(figsize=(15, 10))
 
 # TODO: how would you do this with a Polars data frame? With Polars data frames you might have to use the Seaborn library and it mmight not work out of the box as with pandas.
+#plot entire dataframe
+#y are columns excluding Date
+columns_to_plot =  [col for col in pl_fixed_df.columns if col != 'Date']  # Replace with your column names
+for column in columns_to_plot:
+    plt.plot(pl_fixed_df['Date'].to_list() ,pl_fixed_df[column].to_list(), label=column)
+
+#set legend
+plt.title("polars - all columns plot")
+plt.legend(loc='upper left', bbox_to_anchor=(1, 1), fontsize=10)
+plt.show()
+# %%
