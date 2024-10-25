@@ -9,9 +9,9 @@ plt.rcParams["font.family"] = "sans-serif"
 # %% Load the data
 bikes = pl.read_csv(
     "../data/bikes.csv",
-    sep=";",
+    separator=";",
     encoding="latin1",
-    parse_dates=True,
+    true_parse_dates=True
 )
 
 # Convert 'Date' column to a Date type and set as index
