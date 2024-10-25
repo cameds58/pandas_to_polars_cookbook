@@ -1,5 +1,6 @@
 # %%
 import pandas as pd
+import polars as pl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -15,8 +16,10 @@ weather_2012 = pd.read_csv(
 )
 weather_2012[:5]
 
-# TODO: load the data using polars and call the data frame pl_wather_2012
-
+# %%
+# Load the data using polars and call the data frame pl_wather_2012
+pl_weather_2012 = pl.read_csv("../data/weather_2012.csv", try_parse_dates = True)
+pl_weather_2012.head()
 
 # %%
 # You'll see that the 'Weather' column has a text description of the weather that was going on each hour. We'll assume it's snowing if the text description contains "Snow".
@@ -29,8 +32,12 @@ is_snowing = is_snowing.astype(float)
 is_snowing.plot()
 plt.show()
 
-# TODO: do the same with polars
-
+# %%
+# The same with polars
+pl_is_snowing = pl_weather_2012.select(
+    pl.col("date_time"),
+    pl.col("weather").str.contains("Snow").cast(pl.Float32))
+plt.plot(pl_is_snowing["weather"])
 
 # %%
 # If we wanted the median temperature each month, we could use the `resample()` method like this:
@@ -39,8 +46,12 @@ plt.show()
 
 # Unsurprisingly, July and August are the warmest.
 
-# TODO: and now in Polars
-
+# %%
+# Polars aggregate monthly temperature median
+pl_temperature_median = pl_weather_2012.group_by_dynamic("date_time", every="1mo", period="1mo").agg(
+    pl.col("temperature_c").median()
+)
+plt.bar(pl_temperature_median['date_time'], pl_temperature_median['temperature_c'], width=15)
 
 # %%
 # So we can think of snowiness as being a bunch of 1s and 0s instead of `True`s and `False`s:
@@ -52,4 +63,12 @@ plt.show()
 
 # So now we know! In 2012, December was the snowiest month. Also, this graph suggests something that I feel -- it starts snowing pretty abruptly in November, and then tapers off slowly and takes a long time to stop, with the last snow usually being in April or May.
 
-# TODO: please do the same in Polars
+# %%
+
+# Polars agg mean of snowness
+pl_snowing_monthly_mean = pl_is_snowing.group_by_dynamic("date_time", every="1mo", period="1mo").agg(
+    pl.col("weather").mean()
+)
+plt.bar(pl_snowing_monthly_mean['date_time'], pl_snowing_monthly_mean['weather'], width=15)
+
+
