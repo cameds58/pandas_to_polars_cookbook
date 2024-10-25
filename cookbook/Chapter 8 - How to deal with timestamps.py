@@ -1,14 +1,15 @@
 # %%
 import pandas as pd
 import polars as pl
+import os
 
 # %%
 # Parsing Unix timestamps
 # It's not obvious how to deal with Unix timestamps in pandas -- it took me quite a while to figure this out. The file we're using here is a popularity-contest file of packages.
 
 # Read it, and remove the last row
-# Step 1: Read the text file line by line (plain text handling)
-file_path = "../data/gdp_data.csv"
+# Assuming 'data/gdp_data.csv' is in a 'data' folder within the current working directory
+file_path = os.path.join("data", "gdp_data.csv")
 
 with open(file_path, 'r') as f:
     lines = f.readlines()
