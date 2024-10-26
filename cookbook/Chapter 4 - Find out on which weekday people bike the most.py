@@ -1,97 +1,65 @@
-# %%
-import pandas as pd
+import polars as pl
 import matplotlib.pyplot as plt
 
-# Make the graphs a bit prettier, and bigger
+# Set matplotlib styles
 plt.style.use("ggplot")
 plt.rcParams["figure.figsize"] = (15, 5)
 plt.rcParams["font.family"] = "sans-serif"
 
-# This is necessary to show lots of columns in pandas 0.12.
-# Not necessary in pandas 0.13.
-pd.set_option("display.width", 5000)
-pd.set_option("display.max_columns", 60)
-
 # %% Load the data
-bikes = pd.read_csv(
+bikes = pl.read_csv(
     "../data/bikes.csv",
-    sep=";",
+    separator=";",
     encoding="latin1",
-    parse_dates=["Date"],
-    dayfirst=True,
-    index_col="Date",
+    true_parse_dates=True
 )
-bikes["Berri 1"].plot()
+
+# Convert 'Date' column to a Date type and set as index
+bikes = bikes.with_column(pl.col("Date").str.strptime(pl.Date, "%d/%m/%Y"))
+
+# Select the Berri bike path data
+bikes = bikes.select([pl.col("Date"), pl.col("Berri 1")])
+
+# Set 'Date' as the index
+bikes = bikes.set_sorted("Date")
+
+# %% Plot Berri 1 data using Matplotlib
+plt.plot(bikes["Date"], bikes["Berri 1"])
+plt.title("Berri 1 Bike Path Usage Over Time")
+plt.xlabel("Date")
+plt.ylabel("Number of Cyclists")
 plt.show()
 
-# TODO: Load the data using Polars
-
-# %% Plot Berri 1 data
-# Next up, we're just going to look at the Berri bike path. Berri is a street in Montreal, with a pretty important bike path. I use it mostly on my way to the library now, but I used to take it to work sometimes when I worked in Old Montreal.
-
-# So we're going to create a dataframe with just the Berri bikepath in it
-berri_bikes = bikes[["Berri 1"]].copy()
-berri_bikes[:5]
-
-# TODO: Create a dataframe with just the Berri bikepath using Polars
-# Hint: Use pl.DataFrame.select() and call the data frame pl_berri_bikes
-
+# %% Create a Polars dataframe with just the Berri bike path
+pl_berri_bikes = bikes.select(["Date", "Berri 1"])
 
 # %% Add weekday column
-# Next, we need to add a 'weekday' column. Firstly, we can get the weekday from the index. We haven't talked about indexes yet, but the index is what's on the left on the above dataframe, under 'Date'. It's basically all the days of the year.
+# Extract the weekday from the 'Date' column (0 = Monday, 6 = Sunday)
+pl_berri_bikes = pl_berri_bikes.with_columns(
+    pl.col("Date").dt.weekday().alias("weekday")
+)
 
-berri_bikes.index
-
-# You can see that actually some of the days are missing -- only 310 days of the year are actually there. Who knows why.
-
-# Pandas has a bunch of really great time series functionality, so if we wanted to get the day of the month for each row, we could do it like this:
-berri_bikes.index.day
-
-# We actually want the weekday, though:
-berri_bikes.index.weekday
-
-# These are the days of the week, where 0 is Monday. I found out that 0 was Monday by checking on a calendar.
-
-# Now that we know how to *get* the weekday, we can add it as a column in our dataframe like this:
-berri_bikes.loc[:, "weekday"] = berri_bikes.index.weekday
-berri_bikes[:5]
-
-# TODO: Add a weekday column using Polars.
-# Hint: Polars does not use an index.
-
-
-# %%
-# Let's add up the cyclists by weekday
-# This turns out to be really easy!
-
-# Dataframes have a `.groupby()` method that is similar to SQL groupby, if you're familiar with that. I'm not going to explain more about it right now -- if you want to to know more, [the documentation](http://pandas.pydata.org/pandas-docs/stable/groupby.html) is really good.
-
-# In this case, `berri_bikes.groupby('weekday').aggregate(sum)` means "Group the rows by weekday and then add up all the values with the same weekday".
-weekday_counts = berri_bikes.groupby("weekday").aggregate(sum)
-weekday_counts
-
-# TODO: Group by weekday and sum using Polars
-
+# %% Group by weekday and sum
+weekday_counts = pl_berri_bikes.groupby("weekday").agg(pl.sum("Berri 1"))
 
 # %% Rename index
-weekday_counts.index = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-]
+weekday_map = {
+    0: "Monday", 1: "Tuesday", 2: "Wednesday", 
+    3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"
+}
 
-# TODO: Rename index using Polars, if possible.
-
+# Map weekday numbers to their names
+weekday_counts = weekday_counts.with_column(
+    pl.col("weekday").apply(lambda x: weekday_map[x]).alias("weekday_name")
+)
 
 # %% Plot results
-weekday_counts.plot(kind="bar")
+plt.bar(weekday_counts["weekday_name"], weekday_counts["Berri 1"])
+plt.title("Total Cyclists by Weekday")
+plt.xlabel("Weekday")
+plt.ylabel("Number of Cyclists")
+plt.xticks(rotation=45)
 plt.show()
-
-# TODO: Plot results using Polars and matplotlib
 
 # %% Final message
 print("Analysis complete!")
